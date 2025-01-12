@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // discord-mpd-bot
 // Copyright (C) 2025 skoved
 //
@@ -42,6 +43,8 @@ func main() {
 	if len(os.Args) >= 1 {
 		dl := ytdlp.New()
 		dl.GetURL()
+		dl.AudioFormat("opus")
+		dl.AudioQuality("0")
 		ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 		defer cancel()
 		res, err := dl.Run(ctx, os.Args[1])
@@ -57,10 +60,17 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	if statusAttrs["state"] != "play" {
+	switch statusAttrs["state"] {
+	case "pause":
 		err = client.Pause(false)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Could not unpause MPD:", err.Error())
+			os.Exit(1)
+		}
+	case "stop":
+		err = client.Play(-1)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Could not play MPD:", err.Error())
 			os.Exit(1)
 		}
 	}
