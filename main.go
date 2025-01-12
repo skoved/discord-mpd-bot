@@ -34,6 +34,12 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Could not connect to MPD. Check to make sure that MPD is running:", err.Error())
 		os.Exit(1)
 	}
+	defer func() {
+		err = client.Close()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Could not close connection to MPD:", err.Error())
+		}
+	}()
 	statusAttrs, err := client.Status()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Could not get the state of MPD:", err.Error())
